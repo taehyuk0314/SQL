@@ -1,3 +1,54 @@
+create view emp as
+select employee_id eid,
+first_name fname,
+last_name lname,
+email email,
+phone_number phone,
+hire_date hdate,
+job_id jid,
+salary sal,
+commission_pct comm,
+manager_id mid,
+department_id did
+ from EMPLOYEES;
+ 
+desc jobs;
+create view job as
+select
+JOB_ID jid,
+JOB_TITLE jti,
+MIN_SALARY nsal,
+MAX_SALARY xsal
+from jobs;
+desc DEPARTMENTS;
+create view DEPART as
+select
+    DEPARTMENT_ID did,
+    DEPARTMENT_NAME dname,
+    MANAGER_ID mid,
+    LOCATION_ID lid
+from DEPARTMENTS;
+
+desc LOCATIONS;
+create view loc as
+select
+LOCATION_ID llid,
+STREET_ADDRESS addr,
+POSTAL_CODE zip,
+CITY,
+STATE_PROVINCE prov,
+COUNTRY_ID cid
+from LOCATIONS;
+
+desc JOB_history;
+create view his as
+select
+EMPLOYEE_ID eid,
+START_DATE sdate,
+END_DATE edate,
+JOB_ID jid,
+DEPARTMENT_ID did
+from JOB_history;
 --EMPLOYEES 테이블
 --[ employee_id = 사번 ] [ first_name = 이름 ] 
 --[ last_name = 성 ] [ email = 이메일 ] 
@@ -90,7 +141,7 @@ SELECT first_name,department_id,salary,commission_pct FROM EMPLOYEES WHERE emplo
 -- ******
 select department_id, salary, employee_id, first_name, last_name
 from Employees
-order by department_id asc, salary desc;
+order by department_id , salary desc;
 
 -- *******
 -- 문제014.
@@ -121,3 +172,130 @@ select count(email) from Employees where email not like  'A%';
 select first_name, last_name
 from Employees
 where last_name like '_ee%';
+
+-- Employees 테이블
+
+--[ employee_id = 사번 ] [ first_name = 이름 ] 
+
+--[ last_name = 성 ] [ email = 이메일 ] 
+
+--[ phone_number = 전화번호 ] [ hire_date = 입사일 ]
+
+--[ job_id = 업무코드 ] [ salary = 급여]
+
+--[ commission_pct = 커미션비율 ] [ manager_id = 상사아이디]
+
+--[ department_id = 부서코드]
+
+--  Jobs 테이블
+
+-- job_id 업무코드
+-- job_title 업무타이틀
+-- min_salary  최저급여
+-- max_salary 최고급여
+select * from Employees;
+select * from Jobs ;
+-- *******
+-- 문제018
+ -- 최저임금이 10000불 이상인 업무 의 상세 내역을 표시한다
+-- *******
+
+select *
+from Jobs
+where min_salary>10000;
+
+-- *******************
+-- [문제19]
+-- 2002년부터 2005년까지 
+-- 가입한 직원의 이름과 가입 일자를 표시한다.
+-- *******************
+select first_name,hire_date
+from Employees 
+where hire_date BETWEEN'2002-01-01' and '2005-12-31' ORDER BY hire_date;
+
+-- *******************
+-- [문제020]
+-- IT Programmer 또는 Sales Man인 
+-- 직원의 이름, 입사일, 업무코드 표시.
+-- ******************* 
+
+select first_name "이름",hire_date "입사일",JOB_ID "업무코드"
+from Employees e 
+where job_id in('IT_PROG','SA_MAN');
+
+-- [문제021]
+-- JOB_TITLE 가 "Programmer" 또는 "Sales Manager"인 
+-- 직원의 이름, 입사일, 업무명 표시.
+-- 직원의 이름을 오름차순으로 정렬하시오
+-- *******************
+select
+    e.first_name 이름,
+    e.hire_date 입사일,
+    j.job_id 업무코드,
+    j.job_title 업무명
+from Employees e 
+inner join jobs j
+on e.JOB_ID like j.JOB_ID
+where job_title in('Programmer','Sales Manager')
+order by e.first_name;
+
+-- *******************
+-- [문제022]
+-- 부서명 및 관리자이름 표시
+-- (단, 컬럼명은 관리자 [공백] 이름 이 되도록 ...)
+-- DEPARTMENTS 에서 MANAGER_ID 가 관리자 코드
+-- *******************      
+select dname 부서명 , fname "관리자이름"
+from depart d
+    inner join emp e
+    on d.MID like e.EID;
+    
+    -- *******************
+-- [문제023]
+-- 마케팅(Marketing) 부서에서 근무하는 사원의 
+-- 사번, 직책, 이름, 근속기간
+-- (단, 근속기간은 JOB_HISTORY 에서 END_DATE-START_DATE로 구할 것)
+-- EMPLOYEE_ID 사번, JOB_TITLE 직책임
+-- ******************* 
+select e.eid 사번, j.title 직책, 
+       e.fname,h.EDATE - h.SDATE 근속일수
+from his h
+    join job j
+        on h.jid like j.jid
+    join emp e
+        on e.EID like h.EID
+where e.did like(select d.did
+                 from depart d
+                 where d.DNAME like 'Marketing'
+    );
+    
+    
+    
+-- *******************
+-- [문제025]
+-- 부서명, 관리자 이름, 부서위치 도시 표시
+-- 부서명 오름차순
+-- *******************
+select  
+    dname 부서명, 
+    fname||''||lname"관리자 이름", 
+    city"부서위치 도시" 
+from depart d
+    join emp e
+        on d.mid like e.EID
+    join loc l
+        on d.lid like l.llid
+order by dname;        
+        
+-- *******************
+-- [문제026]
+-- 부서별 평균 급여를 구하시오
+-- *******************    
+select 
+    d.DNAME 부서명,
+    round(avg(e.SAL),2)"부서별 평균 급여"
+from emp e
+    join depart d
+        on e.DID like d.DID
+    group by e.did, d.DNAME    
+    having round(avg(e.SAL),2) >= 10000;
