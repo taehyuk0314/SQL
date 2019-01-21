@@ -257,20 +257,19 @@ from depart d
 -- (단, 근속기간은 JOB_HISTORY 에서 END_DATE-START_DATE로 구할 것)
 -- EMPLOYEE_ID 사번, JOB_TITLE 직책임
 -- ******************* 
-select e.eid 사번, j.title 직책, 
-       e.fname,h.EDATE - h.SDATE 근속일수
-from his h
-    join job j
-        on h.jid like j.jid
-    join emp e
-        on e.EID like h.EID
-where e.did like(select d.did
-                 from depart d
-                 where d.DNAME like 'Marketing'
-    );
+SELECT E.EID 사번, J.jti 직책, E.FNAME 이름, 
+        H.EDATE - H.SDATE 근속일수 
+FROM HIS H
+    JOIN JOB J 
+        ON H.JID LIKE J.JID
+    JOIN EMP E
+        ON E.EID LIKE H.EID
+WHERE E.DID LIKE (SELECT D.DID 
+                  FROM Depart D
+                  WHERE D.DNAME LIKE 'Marketing');
     
     
-    
+SELECT * FROM JOB_history;
 -- *******************
 -- [문제025]
 -- 부서명, 관리자 이름, 부서위치 도시 표시
@@ -299,3 +298,12 @@ from emp e
         on e.DID like d.DID
     group by e.did, d.DNAME    
     having round(avg(e.SAL),2) >= 10000;
+    
+    -- *******************
+-- [문제028]
+-- 올해 연봉에서 10% 인상된 급액이 내년 연봉으로
+-- 책정되었습니다. 내년 전사원의 내년급여를
+-- 출력하세요.
+-- 단, 연봉 = 급여 * 12 입니다
+-- *********************
+
