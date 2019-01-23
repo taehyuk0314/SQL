@@ -100,4 +100,65 @@ select s.sname 스타디움,
        (select t.ENAME from tea t  where t.sID like s.sID) "영문 팀이름"
  from sta s;
 
+-- SOCCER_SQL_016
+-- 평균키가 인천 유나이티스팀의 평균키 보다 작은 팀의 
+-- 팀ID, 팀명, 평균키 추출
+
+select p.Tid "팀id" ,t.TNAME 팀명,avg(p.HEIGHT) 평균키
+from tea t
+    join pla p
+        on t.TID = p.TID 
+group by p.tid,t.TNAME
+having avg(p.HEIGHT)<(select avg(p.HEIGHT)
+                      from tea t
+                        join pla p
+                            on p.tid like t.tid
+                            where t.tname like '유나이티드')
+order by avg(p.HEIGHT) 
+; 
     
+-- SOCCER_SQL_017
+-- 포지션이 MF 인 선수들의  소속팀명 및 선수명, 백넘버 출력
+select t.TNAME 소속팀,p.PNAME 선수명,p.BACK 백넘버
+from (select p.POSITION, p.PNAME,p.BACK,p.TID from pla p where p.POSITION like 'MF') p
+    join tea t
+        on t.TID = p.TID
+order by p.PNAME        
+;
+-- SOCCER_SQL_018
+-- 가장 키큰 선수 5 추출, 오라클, 단 키 값이 없으면 제외
+
+select  rnum,선수명, 백넘버, 포지션,키
+from (select PNAME 선수명,BACK 백넘버,POSITION 포지션,HEIGHT 키,rownum rnum 
+      from (select PNAME,BACK,POSITION,HEIGHT 
+            from pla 
+            where HEIGHT is not null
+            order by HEIGHT desc)) 
+where rnum <=5    
+;
+
+-- SOCCER_SQL_019
+-- 선수 자신이 속한 팀의 평균키보다 작은 선수 정보 출력
+select t.TNAME 팀명,p.PNAME 선수명,p.POSITION 포지션, p.BACK 백넘버, p.HEIGHT 키 
+from tea t
+    join pla p
+        on t.TID = p.TID
+where p.HEIGHT<(select avg(p2.HEIGHT)from pla p2 where p2.tid like p.tid)
+order by p.PNAME;
+
+-- SOCCER_SQL_020
+-- 2012년 5월 한달간 경기가 있는 경기장 조회
+-- EXISTS 쿼리는 항상 연관쿼리로 상요한다.
+-- 또한 아무리 조건을 만족하는 건이 여러 건이라도
+-- 조건을 만족하는 1건만 찾으면 추가적인 검색을 진행하지 않는다
+
+select *
+from sch c
+where c.SDATE between '20120501' and '20120531';
+
+select *
+from sch s
+where exists(select 1
+            from sch c
+            where c.SID like s.SID and 
+            c.SDATE between '20120501' and '20120531') 
