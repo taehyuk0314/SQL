@@ -6,7 +6,7 @@ order by p.BDATE desc;
 
 --2
 select p.BDATE 생년월일, p.PNAME 선수 
-from pla p
+from  p
 where p.BDATE is not null and
       rownum between 1 and 5
 order by p.BDATE desc;
